@@ -1,0 +1,74 @@
+import { useState } from "react";
+import axios from "axios";
+
+function App() {
+  const [jsonInput, setJsonInput] = useState("");
+  const [responseData, setResponseData] = useState(null);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState([]);
+
+  const handleSubmit = async () => {
+    try {
+      const parsedData = JSON.parse(jsonInput);
+      const response = await axios.post("https://your-backend-url/bfhl", parsedData);
+      setResponseData(response.data);
+      setError(null);
+    } catch (err) {
+      setError("Invalid JSON or API error");
+    }
+  };
+
+  const handleFilterChange = (option) => {
+    setFilter((prev) =>
+      prev.includes(option) ? prev.filter((item) => item !== option) : [...prev, option]
+    );
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col items-center p-6 bg-gray-900 text-white">
+      <h1 className="text-3xl font-bold mb-4">Bajaj Finserv Health Dev Challenge</h1>
+
+      <textarea
+        className="w-96 h-32 p-2 rounded-lg text-black"
+        placeholder='Enter JSON like { "data": ["A", "C", "z"] }'
+        value={jsonInput}
+        onChange={(e) => setJsonInput(e.target.value)}
+      />
+      <button className="bg-blue-500 p-2 mt-4 rounded" onClick={handleSubmit}>
+        Submit
+      </button>
+
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+
+      {responseData && (
+        <div className="mt-4 w-96 p-4 bg-gray-700 rounded">
+          <h2 className="text-xl">Response Data</h2>
+          
+          <div className="flex flex-wrap mt-2">
+            {["alphabets", "numbers", "highest_alphabet"].map((option) => (
+              <label key={option} className="mr-4">
+                <input
+                  type="checkbox"
+                  checked={filter.includes(option)}
+                  onChange={() => handleFilterChange(option)}
+                /> {option}
+              </label>
+            ))}
+          </div>
+
+          <pre className="bg-gray-800 p-2 mt-2 rounded">
+            {JSON.stringify(
+              Object.fromEntries(
+                Object.entries(responseData).filter(([key]) => filter.includes(key))
+              ),
+              null,
+              2
+            )}
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
